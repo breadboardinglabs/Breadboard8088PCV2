@@ -1,0 +1,110 @@
+Name            7SEGDECV2 7 Segment Keypad Decoder;
+Partno          7SEGDECV2;
+Revision        02;
+Date            05/03/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/*****************************************************************************/
+/* 30/11/2023 V1 Expands 74LS145 decoder to do 4 keypad and 8 LED segments   */
+/*               Takes PB0-3 and provides Q0-Q3 for keypad then outputs      */
+/*               Pass through P0-P3 Shifted by 4 to give Q4-Q11 for          */
+/*               8 x 7 Segment LEDs                                          */
+/* 05/03/2025 V2 Converted to ATF22V10C and D0-D3 using LOADB clock          */
+/*               Note .SP will set register outputs to 1 on RESET            */
+/*               ROW1..ROW5 will be all set to 1 on RESET until PORTB set    */
+/*               But at least the 7 Segment LED for Q0 will not be lit!      */
+/*               Need to enable Compiler Minimization if too many terms      */
+/*****************************************************************************/
+
+/* Pin Map 
+         --------
+  LOADB |1     24| Vcc
+  I1    |2     23| SP3   
+  I2    |3     22| SP2  
+  I3    |4     21| SP1  
+  I4    |5     20| SP0    
+  I5    |6     19| ROW1 
+  D0    |7     18| ROW2  
+  D1    |8     17| ROW3   
+  D2    |9     16| ROW4  
+  D3    |10    15| ROW5  
+  /RESET|11    14| IO9  
+  Gnd   |12    13| I11 
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 1  =  LOADB; /* LOADB latches values from D0-D3 on rising value */
+Pin 7  =  D0;
+Pin 8  =  D1;
+Pin 9  =  D2;
+Pin 10 =  D3;
+Pin 11 = !RESET;
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = SP3;        /* 7 Segment pass through SP0 output for Q5-Q12 */
+Pin 22 = SP2;        /* 7 Segment pass through SP1 output for Q5-Q12 */
+Pin 21 = SP1;        /* 7 Segment pass through SP2 output for Q5-Q12 */
+Pin 20 = SP0;        /* 7 Segment pass through SP3 output for Q5-Q12 */
+Pin 19 = ROW1;       /* Keypad Row 1 output  */
+Pin 18 = ROW2;       /* Keypad Row 2 output  */
+Pin 17 = ROW3;       /* Keypad Row 3 output  */
+Pin 16 = ROW4;       /* Keypad Row 4 output  */
+Pin 15 = ROW5;       /* Keypad Row 5 output  */
+
+/*
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+/*
+ * Logic:  
+ */
+FIELD PORTB = [D3..0];
+
+ROW1.D = PORTB:0;
+ROW2.D = PORTB:1;
+ROW3.D = PORTB:2;
+ROW4.D = PORTB:3;
+ROW5.D = PORTB:4;
+[ROW5..1].SP = RESET; 
+[ROW5..1].AR = 'b'0;
+ 
+/* Q8 is not used but gives value when Keypad ROW1..ROW5 selected and after RESET when .SP sets PORTB to 0xF
+PORTB   
+   0      LED Q8 ROW1
+   1      LED Q8 ROW2
+   2      LED Q8 ROW3
+   3      LED Q8 ROW4
+   4      LED Q8 ROW5
+   5      LED Q0
+   6      LED Q1
+   7      LED Q2
+   8      LED Q3
+   9      LED Q4
+  10      LED Q5
+  11      LED Q6
+  12      LED Q7
+  13      LED Q8 Out of range
+  14      LED Q8 Out of range
+  15      LED Q8 Out of range - Reset */
+
+/* On reset all SP3..SP0 will be set to 1 resulting in 0xF and 74LS145 decoder will have no Q0-Q9 outputs low */
+/* This should prevent the 1st Segment being selected by default for Q0 before the Monitor sets the Port B and Port A values */
+[SP3..0].SP = RESET; 
+[SP3..0].AR = 'b'0; 
+
+/* Note that this requires WInCUPL Compiler minimization to be enabled - Quick should do otherwise get too many terms */
+FIELD OUTPUT = [SP3..0].D;
+TABLE PORTB => OUTPUT {
+0=> 08; 1=>08; 2=>08; 3=>08;
+4=>08; 5=>00; 6=>01; 7=>02;
+8=>03; 9=>04; A=>05; B=>06;
+C=>07; D=>08; E=>08; F=>08;
+}

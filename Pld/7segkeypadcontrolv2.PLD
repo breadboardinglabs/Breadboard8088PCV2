@@ -1,0 +1,65 @@
+Name            7SEGCTRLV1 7 Segment Keypad Control Logic;
+Partno          7SEGCTRLV1;
+Revision        01;
+Date            06/03/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          g16v8as;
+
+/******************************************************************************/
+/* 06/03/2025 V1 Produces control signals for 7 Segment LED display & Keypad  */
+/*               74LS646 provides Port A for read and write, 2nd PLD Port B   */
+/*               DIR2 logic rule was DIR also now !, didn't check. doc file!  */
+/*               Also now using DT/R to Replace IOW and !DT/R to replace !IOW */
+/******************************************************************************/
+
+/* Pin Map 
+         --------
+  /IO4XX|1     20| Vcc
+  /IOW  |2     19| LOADB   
+  A0    |3     18| IO2  
+  /RESET|4     17| IO3  
+  DT/R  |5     16| IO4    
+  NC    |6     15| IO5 
+  NC    |7     14| /OE6462
+  NC    |8     13| CAB2   
+  NC    |9     12| DIR2  
+  Gnd   |10    11| NC 
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  =  !IO4XX;   /* Main decoder IOR or IOW and 04XX IO range */
+Pin 2  =  !IOW;     /* IO Write active low but reverse polarity */
+Pin 3  =  A0;       /* Address line 0 Port A=0, Port B=1 */
+Pin 4  =  !RESET;   /* Active low RESET reverse polarity, RESET will disable Output Enable */
+Pin 5  =  DTR;      /* Data Transmit (High) / Receive (Low) from CPU view */
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 19 = !LOADB;    /* Clock Output to latch D0-D3 into Port B for SP0-3 ROW1-5 triggered on low to high */
+Pin 14 = !OE6462;   /* Output enable for Keypad 646 active low  */
+Pin 13 = !CAB2;     /* Clock A-B to latch CPU D0-D7 to Port A outputs B0-B7 low to high transition */
+Pin 12 = !DIR2;      /* Direction for Keypad 646 High A-B CPU write, Low B-A CPU Read */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+/*
+ * Logic:  
+ */
+
+LOADB = IO4XX & IOW & A0;    /* Clock on rising edge of write to A0=1 for 0x0401 */
+DIR2  = IO4XX & !DTR & !A0;  /* Direction = Port to CPU on read and 0x400 otherwise CPU to port */
+CAB2  = IO4XX & IOW & !A0;   /* Clock on rising edge of write to A0=0 for 0x0400 */
+                             /* Enabled when !IO4XX or when IO4XX & !IOW & !A0 - read 0x0400, reset disables Output Enable and pull down resistors to GND take over */
+                             /* Use DTR/R for read as wider than IOW, get shoulders around IOW in OE and DIR IO4XX is already combined with IOW # IOW */
+OE6462 = !RESET & (!IO4XX # (IO4XX & DTR) # (IO4XX & !DTR & !A0)); 

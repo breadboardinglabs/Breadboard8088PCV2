@@ -1,0 +1,87 @@
+Name            IODECODER2V2 Breadboard PC V2 IO Decoder 2 V2;
+Partno          IODECODER2V2;
+Revision        2;
+Date            18/3/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 18/03/2025 V1 Created for Breadboard PC V2 Video #6                            */
+/* 27/03/2025 V2 Added local XRESET frm /RESET for Breadboard PC V2 Video #7      */
+/*               Interferance on RESET > 2V at 2KHz causing problems with UART    */
+
+/**********************************************************************************/
+/* PS/2 Keyboard/Mouse controller  0x0060 & 0x0064 A0=XA2                         */
+/* IDE Controller 0x0300-0x0307                                                   */
+/* IDE Controller 0x0308-0x030F                                                   */
+/* COM1 Serial Port 0x3F8-0x3FF                                                   */
+/* Floppy Disk Controller 0x3F0-0x3F7                                             */
+/**********************************************************************************/
+
+/* Pin Map 
+       --------
+A0    |1     24| Vcc
+A1    |2     23| /KEYCS
+A2    |3     22| /CS1FX
+A3    |4     21| /CS3FX
+A4    |5     20| RESET
+A5    |6     19| NC
+A6    |7     18| /SER1CS
+A7    |8     17| /FDCCS
+/RESET|9     16| XA0
+/IO3XX|10    15| XA1
+/IO0XX|11    14| XA2
+Gnd   |12    13| NC
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 8088/8284/8288
+ */
+                                                         
+Pin 1  =  A0;
+Pin 2  =  A1;
+Pin 3  =  A2;
+Pin 4  =  A3;
+Pin 5  =  A4;
+Pin 6  =  A5;
+Pin 7  =  A6;
+Pin 8  =  A7;
+Pin 9  =  !RESETIN; /* Active Low RESET, no interferance! */
+Pin 10 =  !IO3XX; /* Note in logic IO3XX is True when high 0x0300-0x3FF IO Port range & (IOR # IOW) */
+Pin 11 =  !IO0XX; /* Note in logic IO0XX is True when high 0x0000-0x0FF IO Port range & (IOR # IOW) */
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = !KEYCS;    /* PS/2 Keyboard/Mouse controller  0x0060 & 0x0064 A0=XA2  */
+Pin 22 = !CS1FX;    /* IDE Controller 0x0300-0x0307 */
+Pin 21 = !CS3FX;    /* IDE Controller 0x0308-0x030F */
+Pin 20 = RESET;     /* Local Active High RESET */
+Pin 18 = !SER1CS;   /* COM1 Serial Port 0x3F8-0x3FF */
+Pin 17 = !FDCCS;    /* Floppy Disk Controller 0x3F0-0x3F7 */
+Pin 16 = XA0;       /* Buffered A0 */
+Pin 15 = XA1;       /* Buffered A1 */
+Pin 14 = XA2;       /* Buffered A2 */
+
+field   address    = [A7..0] ;
+/*
+ * Logic:  All CS outputs are active low signals in the target system.
+ */
+ 
+KEYCS  = IO0XX & (address:[0060] # address:[0064]); /* PS/2 Keyboard/Mouse controller  0x0060 or 0x0064 A0=XA2 */
+CS1FX  = IO3XX & address:[0300..0307];              /* IDE Controller 0x0300-0x0307 */
+CS3FX  = IO3XX & address:[0308..030F];              /* IDE Controller 0x0308-0x030F */
+SER1CS = IO3XX & address:[03F8..03FF];              /* COM1 Serial Port 0x3F8-0x3FF */
+FDCCS  = IO3XX & address:[03F0..03F7];              /* Floppy Disk Controller 0x3F0-0x3F7  */
+
+
+
+XA0 = A0;
+XA1 = A1;
+XA2 = A2;
+
+RESET = RESETIN; /* /RESETIN has polarity set so High when /RESET is low */

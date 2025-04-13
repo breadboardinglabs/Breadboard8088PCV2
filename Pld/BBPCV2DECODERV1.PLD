@@ -1,0 +1,86 @@
+Name            PCV2DECODERV1 Breadboard PC V2 Address Decoder V1;
+Partno          PCV2DECODERV1;
+Revision        1;
+Date            28/2/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 28/02/2025 V1 Created for Breadboard PC V2 Video #3                            */
+
+
+/**********************************************************************************/
+/*  00000 7FFFF RAM0 512K RAM /RAM0CE                                             */
+/*  80000 9FFFF RAM1 128K RAM /RAM1CE, additional upper memory RAM could be added */
+/*IO 0000  00FF /IO0XX Ports for system devices                                   */
+/*IO 0300  03FF /IO3XX Ports for system and external devices 03F8-03FE COM1       */
+/*IO 0400  04FF Port For LED Display and Keypad                                   */
+/*  F8000 FFFFF ROM 32K for Nanocomp Monitor then PC BIOS                         */
+/**********************************************************************************/
+
+/* Pin Map 
+       --------
+A19   |1     24| Vcc
+A18   |2     23| /CGARAM
+A17   |3     22| /IO4XX
+A16   |4     21| /IO3XX
+A15   |5     20| /IO0XX
+A14   |6     19| /RAM1CE
+A13   |7     18| /RAM0CE
+A12   |8     17| /ROMCE
+/IOR  |9     16| A11
+/IOW  |10    15| A10
+ALE   |11    14| A9
+Gnd   |12    13| A8
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 8088/8284/8288
+ */
+                                                         
+Pin 1  =  A19;
+Pin 2  =  A18;
+Pin 3  =  A17;
+Pin 4  =  A16;
+Pin 5  =  A15;
+Pin 6  =  A14;
+Pin 7  =  A13;
+Pin 8  =  A12;
+Pin 9  =  !IOR; /* Note in logic IOR is True when high */
+Pin 10 =  !IOW; /* Note in logic IOW is True when high */
+Pin 11 =  ALE;  /* Adress Latch enable when High allows CPU addresses to pass through latch. Will be latched on high to low transition */
+Pin 13 =  A8;
+Pin 14 =  A9;
+Pin 15 =  A10;
+Pin 16 =  A11;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = !CGARAM;   /* CGA 32K Block B8000 - BFFFF  */
+Pin 22 = !IO4XX;    /* IO Ports 0400-04FF */
+Pin 21 = !IO3XX;    /* IO Ports 0300-03FF */
+Pin 20 = !IO0XX;    /* IO Ports 0000-00FF */
+Pin 19 = !RAM1CE;   /* Second RAM for full 640K and upper memory area */
+Pin 18 = !RAM0CE;   /* Lower 512K RAM */
+Pin 17 = !ROMCE;    /* ROM in top 32K of 1MB address space F8000-FFFFF */
+
+field   address    = [A19..8] ;
+/*
+ * Logic:  All CE outputs are active low signals in the target system.
+ */
+/* Include condition to prevent CGARAM Chip Enable when ALE is true during latch refresh */
+CGARAM = address:[B8000..BFFFF] & !ALE; /* CGA 32K Block B8000 - BFFFF */
+IO0XX  = address:[00000..000FF];        /* 00000-000FF */
+IO3XX  = address:[00300..003FF];        /* 00300-003FF */
+IO4XX  = address:[00400..004FF];        /* 00400-004FF */
+ 
+RAM0CE = address:[00000..7FFFF];        /* 00000-7FFFF */
+RAM1CE = address:[80000..9FFFF];        /* 80000-9FFFF */
+ROMCE  = address:[F8000..FFFFF];        /* F8000-FFFFF */
+
+

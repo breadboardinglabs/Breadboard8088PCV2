@@ -1,0 +1,84 @@
+Name            BBPCV2IODECODER1V1 Breadboard PC V2 IO Address Decoder 1 V1;
+Partno          IODECODER1V1;
+Revision        1;
+Date            31/03/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 31/03/2025 V1 Created for Breadboard PC V2 Video #8                              */
+
+/************************************************************************************/
+/*  See BreadboardPCV2_IRQ_and_IO.xlsx for details of IO Mapping                    */
+/************************************************************************************/
+
+/* Pin Map 
+          --------
+ N       |1     24| Vcc
+ /IOR    |2     23| /PIC1CS
+ /IOW    |3     22| /PIC2CS
+ A0      |4     21| /PITCS
+ A1      |5     20| RTCAEN
+ A2      |6     19| /RTCW
+ A3      |7     18| /RTCR
+ A4      |8     17| /PORTBW
+ A5      |9     16| /PORTBR
+ A6      |10    15| /POSTCS
+ A7      |11    14| /SYSBUFCE
+ Gnd     |12    13| /IO0XX
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 2  =  !IOR; 
+Pin 3  =  !IOW;
+Pin 4  =  A0;
+Pin 5  =  A1;
+Pin 6  =  A2;
+Pin 7  =  A3;
+Pin 8  =  A4;
+Pin 9  =  A5; 
+Pin 10 =  A6;
+Pin 11 =  A7;
+Pin 13 =  !IO0XX;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = !PIC1CS;      /* Programmable Interrupt Controller 1 CS (PIC1) */
+Pin 22 = !PIC2CS;      /* Programmable Interrupt Controller 2 CS (PIC2) */
+Pin 21 = !PITCS;       /* Programmable Interval Timer (PIT) CS  */
+Pin 20 = RTCAEN;       /* RTC Address Enable */
+Pin 19 = !RTCW;        /* RTC Write Enable */
+Pin 18 = !RTCR;        /* RTC Read Enable */
+Pin 17 = !PORTBW;      /* PPI Port B Write */
+Pin 16 = !PORTBR;      /* PPI Port B Read */      
+Pin 15 = !POSTCS;      /* POST Port 0x80 */
+Pin 14 = !SYSBUFCE;    /* System databus buffer */
+/*
+ * Logic:  All CS outputs are active low signals in the target system.
+ */
+ 
+field   address    = [A7..0] ;
+ 
+
+PIC1CS = IO0XX & address:[0020..003F];        /* 0x20 - 0x3F */
+PIC2CS = IO0XX & address:[00A0..00BF];        /* 0xA0 - 0xBF */
+
+PITCS  = IO0XX & address:[0040..0043];        /* 0x40 - 0x43 */
+PORTBR = IO0XX & address:[0061] & IOR;        /* 0x61 - 0x61 and IOR */
+PORTBW = IO0XX & address:[0061] & IOW;        /* 0x61 - 0x61 and IOW */
+
+POSTCS = IO0XX & address:[0080] & IOW;        /* 0x80 and IOW */
+
+SYSBUFCE = PIC1CS # PIC2CS # PITCS # PORTBR # PORTBW # POSTCS;
+
+RTCAEN = IO0XX & address:[0070] & IOW;         /* RTC Address is 0x0070 and IOW */
+RTCW   = IO0XX & address:[0071] & IOW;         /* RTC Data is 0x0071 and IOW */
+RTCR   = IO0XX & address:[0071] & IOR ;        /* RTC Data is 0x0071 and IOR */
+

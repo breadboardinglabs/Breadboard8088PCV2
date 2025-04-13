@@ -1,0 +1,82 @@
+Name            BBPCV2RDYWSPKRV1 Breadboard PC V2 Ready/Wait Speaker Output & Refresh Timer V1;
+Partno          RDYWSPKRV1;
+Revision        1;
+Date            01/04/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v750c;
+
+/* 01/04/2025 V1 Created for Breadboard PC V2 Video #8                                */
+
+
+/**********************************************************************************/
+/*  See BBPCV2PLDs Schematic for OUT1 Flip FLop and Speaker Output NAND           */
+/**********************************************************************************/
+
+/* Pin Map 
+          --------
+ /IOR    |1     24| Vcc
+ /IOW    |2     23| REF_DET 
+ /RESET  |3     22| /RDY/WAIT 
+ OUT1    |4     21| IRQ8 
+ SPKR    |5     20| NC 
+ OUT2    |6     19| CLK88 
+ /IRQ8   |7     18| IORIOWCLK 
+ NC      |8     17| NC 
+ NC      |9     16| NC 
+ NC      |10    15| TC 
+ NC      |11    14| SPKROUT
+ Gnd     |12    13| NC
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 1  = IOW;     /* Logic easier not using polarity, active low */
+Pin 2  = IOR;     /* Logic easier not using polarity, active low */
+Pin 3  = !RESET; 
+Pin 4  =  OUT1;  /* This is the DRAM refresh Clock, every 15us from Timer/PIT, Clock for REF_DET */
+Pin 5  =  SPKR;  /* Port B Speaker output if not using timer */
+Pin 6  =  OUT2;  /* Timer/PIT Output 2 for Sound Square Wave */
+Pin 7  =  IRQ8INV; /* IRQ8 for RTC active low */
+Pin 19 =  CLK88;   /* CPU Clock for RDY/WAIT */ 
+/*
+ * Outputs:  define outputs 
+ */
+
+Pin 23 = REF_DET;       /* Refresh DRAM timer output toggled - to Port B for timing loops */
+Pin 21 = IRQ8;          /* RTC interrupt active high */
+Pin 22 = RDYWAIT;       /* !RDY/WAIT add wait state to IO when high */
+Pin 18 = IORIOWCLK;     /* Internal clock combinng IOR and IOW as can only assign single term to .CK */
+Pin 14 = !SPKROUT;      /* Speaker Out NAND of SPKR and OUT2 */     
+
+/* PINNODE [25..34]  = [Q1_0..9]; Feedback from Q1 .DFB */
+PINNODE 25  = RDYWAIT1; /* RDY/WAIT + 1 CLK88 delay */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input .DFB Flip Flop feedback .Q  .CK Clock
+ */
+REF_DET.ck = OUT1;      /* refresh clock toogles REF_DET output */ 
+REF_DET.ar = RESET;
+REF_DET.d = !REF_DET;   /* CLK will toggle REF_DET output value */
+REF_DET.sp = 'b'0;
+
+SPKROUT = OUT2 & SPKR;
+
+IORIOWCLK = !(IOR & IOW); /* Clock Input for RDYWAIT NAND of /IOR, /IOW */
+
+/* RDYWAIT Ready active Low, Wait Active high */
+RDYWAIT.ck  = IORIOWCLK;  /* RDYWAIT clocked by NAND of /IOR, /IOW */
+RDYWAIT.d   = 'b'1;
+RDYWAIT.sp  = 'b'0;       /*Disable Presets for extending wait -was IOREADY */
+RDYWAIT.ar  = !RDYWAIT1; /* RDYWAIT Reset = RDYWAIT1./Q *.
+
+
+RDYWAIT1.ck = CLK88;
+RDYWAIT1.d  = RDYWAIT;  /* RDYWAIT.Q feeds back as input for +1 */
+RDYWAIT1.sp = 'b'0;     /* No Pre-set for RDYWAIT+1 */
+RDYWAIT1.ar = RESET;
