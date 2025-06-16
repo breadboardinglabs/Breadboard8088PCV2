@@ -1,0 +1,446 @@
+Name            CGAVIDEOV2 100 Pin TQFP Thin Quad Flat Package in 0.1" adapter;
+Partno          CGAVIDEOV2;
+Revision        2;
+Date            04/5/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          f1504isptqfp100;
+
+/* 04/05/2025 V1 Initial version to replace most video side logic clock & blinksync  */
+/*               Note the fitter does mot lik legal variable 640BW changed to BW640! */
+/* 05/05/2025 V2 Add control and colour registers                                    */
+
+/*************************************************************************************/
+/*                                                                                   */
+/*************************************************************************************/
+
+/* Select ATF1504 Fitter Property list */
+/* 1) Preassign Keep is on - Keep User assigned pins */
+/* 2) Disable Pin Keeper Circuits */
+/* 3) Enable fast slew rate */
+
+PROPERTY ATMEL {preassign keep};
+PROPERTY ATMEL {pin_keep OFF} ; /* Disables pin-keeper circuits */
+PROPERTY ATMEL {OUTPUT_FAST ON};
+
+/* Pin Map for 100 pin Breadboard TQFP adapter.
+Note pin layout different from .FIT file pin 26 moved from bottom to left, 76 from top to right. Rows in top and bottom swapped.
+                                              2   C C C   D C C                              
+                                H   V   G     5   G G U   E H L                            
+                    P P P P P   S   S   C     M   A A R     A R                           
+                    4 3 2 1 0   Y   Y   L     H   C C S     R _                          
+                                N   N V K     Z   O T O     C S                          
+                                C   C C 2         L L R     L R
+                                              G             K                          
+                      M M M M   M M M C _ G   C   M M M   M M M                             
+                    M C C C C G C C C I O C O L G C C C V C C C                             
+                    C 1 1 1 1 N 1 1 1 N E L E K N 6 6 6 C 6 6 5 N N                         
+                    9 0 1 2 3 D 4 5 6 T 2 R 1 1 D 4 3 2 C 1 0 9 C C                         
+                  ----------------------------------------------------                     
+                 /    99  97  95  93  91  89  87  85  83  81  79  77  \  Odd Outside pins                 
+                /  100  98  96  94  92  90  88  86  84  82  80  78     \ Even Inside pins                 
+Even inside NC | 1                                                   76 | MC58 DotClk  Even Inside pins         
+Odd outside NC | 2                                                   75 | MC57 CHLATCH Odd Outside pins         
+           VCC | 3                                                   74 | GND              
+           TDI | 4                                                   73 | TDO              
+            NC | 5                                                   72 | NC               
+           MC7 | 6                                                   71 | MC55 D7            
+            NC | 7                                                   70 | NC               
+           MC6 | 8                                                   69 | MC54
+           MC5 | 9                                                   68 | MC53 D6            
+           MC4 | 10                                                  67 | MC52 SDOTS    
+           GND | 11                                                  66 | VCC              
+           MC3 | 12                     ATF1504                      65 | MC51 D5            
+           MC2 | 13                  100-Lead TQFP                   64 | MC50 ATSRLATCH
+           MC1 | 14                                                  63 | MC49 D4            
+           TMS | 15                                                  62 | TCK              
+          MC31 | 16                                                  61 | MC47 D3            
+          MC30 | 17                                                  60 | MC46 HS          
+           VCC | 18                                                  59 | GND              
+          MC29 | 19                                                  58 | MC45 D2            
+       Qa MC28 | 20                                                  57 | MC44 VS          
+       Qb MC27 | 21                                                  56 | MC43 D1            
+            NC | 22                                                  55 | NC               
+       Qc MC26 | 23                                                  54 | MC42 /RESET            
+            NC | 24                                                  53 | NC               
+       Qd MC25 | 25                                                  52 | MC41 DO      
+           GND | 26                                                  51 | VCC 
+                \     28  30  32  34  36  38  40  42  44  46  48  50   /  Odd Outside pins                 
+                 \  27  29  31  33  35  37  39  41  43  45  47  49     /   Even Inside pins                 
+                  ----------------------------------------------------                     
+                    N N M M M M M V M M M G V M M M G M M M M M N N                       
+                    C C C C C C C C C C C N C C C C N C C C C C C C                       
+                        2 2 2 2 2 C 1 1 1 D C 3 3 3 D 3 3 3 3 4                            
+                        4 3 2 1 0   9 8 7   I 3 4 5   6 7 8 9 0                            
+                        V V V V V   V V V   N         G C C H B
+                        D D D D D   D D D   T         R H H I W
+                        7 6 5 4 3   2 1 0             P A A R 6
+                                                      H T T E 4
+                                                        D   S 0
+                                                        L
+                                                        Y
+
+VCC = Supply Voltage for IO pin which must be connected to (5.0V or 3.3V)
+VCCINT = VCC +5V Internal
+GND = GND pin which must be connected to ground
+TMS,TDI,TDO,TDI = JTAG pins which must reserved for the JTAG interface
+NC = Unused I/O pins which must be unconnected on the board
+*/
+
+/*
+ * JTAG: For programming, don't use. Re-enable JTAG support 12V on OE1 via 1K8 Resistor
+ *  
+ *  Pin 4  TDI MC8
+ *  Pin 15 TMS MC32
+ *  Pin 62 TCK MC48
+ *  Pin 73 TDO MC56
+ *  
+ */
+
+/*
+ * Inputs:  
+ */
+Pin 90 = GCLK2_OE2;
+Pin 89 = GCLR;
+Pin 88 = OE1; /* Also 12V via 1K8 Resistor will restore JTAG programming if disabled */
+Pin 87 = GCLK1; /* GCLK1 Global clock set to 25.175MHz VGA dot clock */
+/* Note GLK3 also Pin 85 MC64 */
+25MHZ = GCLK1; /* synonym for 25MHZ as Fitter doesn't like numeric starting variables */
+
+
+/*
+ * Inputs/Outputs:  
+ */
+
+Pin 14      = MC1;
+Pin 13      = MC2; 
+Pin 12      = MC3;
+Pin 10      = MC4;
+Pin 9       = MC5;
+Pin 8       = MC6;
+Pin 6       = MC7;
+/* Pin 4 MC8 TDI JTAG Do Not use */
+Pin 100     = P4;   /* Output to Video DAC bit 4 MC9; */
+Pinnode 609 = VSQ4; /* Counter Q4 for Blink Char & Cursor VS/32 */ 
+Pin 99      = P3;   /* Output to Video DAC bit 3 MC10; */
+Pinnode 610 = VSQ3; /* Counter Q3 for Blink Char & Cursor VS/16 */ 
+Pin 98      = P2;   /* Output to Video DAC bit 2 MC11; */
+Pinnode 611 = VSQ2; /* Counter Q2 for Blink Char & Cursor VS/8 */ 
+Pin 97      = P1;   /* Output to Video DAC bit 1 MC12; */
+Pinnode 612 = VSQ1; /* Counter Q1 for Blink Char & Cursor VS/4 */ 
+Pin 96      = P0;   /* Output to Video DAC bit 0 MC13; */
+Pinnode 613 = VSQ0; /* Counter Q0 for Blink Char & Cursor VS/2 */ 
+Pin 94      = HSYNC; /* Horizontal Sync output to VGA, inverted and delayed */
+Pin 93      = MC15;
+Pin 92      = VSYNC; /* Vertical Sync output to VGA, not inverted and delayed */
+Pin 37      = VD0in; /* MC17; */
+Pinnode 617 = VD0;   /* MC17; */
+Pin 36      = VD1in; /* MC18; */ 
+Pinnode 618 = VD1;   /* MC18; */ 
+Pin 35      = VD2in; /* MC19; */
+Pinnode 619 = VD2;   /* MC19; */
+Pin 33      = VD3in; /* MC20; */
+Pinnode 620 = VD3;   /* MC20; */
+Pin 32      = VD4in; /* MC21; */
+Pinnode 621 = VD4;   /* MC21; */
+Pin 31      = VD5in; /* MC22; */
+Pinnode 622 = VD5;   /* MC22; */
+Pin 30      = VD6in; /* MC23; */
+Pinnode 623 = VD6;   /* MC23; */
+Pin 29      = VD7in; /* MC24; */
+Pinnode 624 = VD7;   /* MC24; */
+Pin 25      = Qd;  /* MC25; */
+Pin 23      = Qc;  /* MC26; */
+Pin 21      = Qb;  /* MC27; */
+Pin 20      = Qa;  /* MC28; */
+Pin 19      = MC29;
+Pin 17      = MC30;
+Pin 16      = MC31;
+/* Pin 15 MC32 TMS JTAG Do Not use */
+Pin 40      = BLINKEN; /* Control Port D5 MC33; */
+Pin 41      = VIDEOEN; /* Control Port D3 MC34; */
+Pin 42      = BW;      /* Control Port D2 MC35 */
+Pin 44      = GRPH;    /* Control Port D1 MC36; */
+Pin 45      = CHATDLY; /* MC37; */
+Pin 46      = CHAT;    /* MC38; */
+Pin 47      = HIRES;   /* Control Port D0 MC39; */
+Pin 48      = BW640;   /* Control Port D4 MC40; */
+Pin 52      = D0; /* Input only MC41; */
+Pinnode 641 = CRBLUE; /* MC41; */
+Pin 54      = !RESET; /* MC42; */
+Pin 56      = D1; /* MC43; */
+Pinnode 643 = CRGREEN; /* MC43; */
+Pin 57      = VS; /* MC44; */
+Pin 58      = D2; /* MC45; */
+Pinnode 645 = CRRED; /* MC45; */
+Pin 60      = HS; /*MC46; */
+Pin 61      = D3; /* MC47; */
+Pinnode 647 = CRINTEN; /* MC47; */
+/* Pin 62 MC48 TCK JTAG Do Not use */
+Pin 63      = D4; /* MC49; */
+Pinnode 649 = CRBACKI; /* MC49; */
+Pin 64      = !ATSRLATCH; /* MC50; */
+Pin 65      = D5; /* MC51; */
+Pinnode 651 = CRCOLSL; /* MC51; */
+Pin 67      = SDOTS; /* MC52; */
+Pin 68      = MC53; /* D6; */
+Pin 69      = MC54; /* MC54; */
+Pin 71      = MC55; /* D7; */
+/* Pin 73 MC56 TDO JTAG Do Not use */
+Pin 75      = !CHLATCH;  /* MC57; */
+Pin 76      = DOTCLK;   /* MC58; */
+Pin 79      = !CLR_SR;  /* MC59; */
+Pin 80      = !INVCHCLK; /* MC60; */
+Pin 81      = DE;       /* MC61; */
+Pinnode 661 = BLANKDE1; /* MC61; */
+Pin 83      = CURSOR;   /* MC62; */
+Pin 84      = CGACTL;  /* CGA Control register select active low but will not use ! as need rising clock to .d MC63; */
+Pin 85      = CGACOL;  /* CGA Colour register select active low but will not use ! as need rising clock to .d MC64; */
+
+FIELD   CPUDATA = [D5..0] ; /* Only D0-D5 used with Colour and Control registers */
+/* FIELD   VIDDATA = [VD7..0] ;
+FIELD   VIDDATAin = [VDin7..0] ; */
+
+/* CPUDATA.OE = 'b'0;  D0-D7 will be input only - Fitter doesn't like this unlike ATF16V8 and ATF22V10 !*/
+
+/* Define Colour register based on pinnodes for D0-D5 */
+CRBLUE.d = D0.io;
+CRGREEN.d = D1.io;
+CRRED.d = D2.io;
+CRINTEN.d = D3.io;
+CRBACKI.d = D4.io;
+CRCOLSL.d = D5.io;
+
+CRBLUE.CK = CGACOL;
+CRGREEN.CK = CGACOL;
+CRRED.CK = CGACOL;
+CRINTEN.CK = CGACOL;
+CRBACKI.CK = CGACOL;
+CRCOLSL.CK = CGACOL;
+
+/* Latch Video Data in VDin0-7 to VD0-7 pinnodes using ATSTLATCH clock */
+VD0.d = VD0in.io;
+VD1.d = VD1in.io;
+VD2.d = VD2in.io;
+VD3.d = VD3in.io;
+VD4.d = VD4in.io;
+VD5.d = VD5in.io;
+VD6.d = VD6in.io;
+VD7.d = VD7in.io;
+
+VD0.CK = ATSRLATCH;
+VD1.CK = ATSRLATCH;
+VD2.CK = ATSRLATCH;
+VD3.CK = ATSRLATCH;
+VD4.CK = ATSRLATCH;
+VD5.CK = ATSRLATCH;
+VD6.CK = ATSRLATCH;
+VD7.CK = ATSRLATCH;
+
+VD0.AR = CLR_SR;
+VD1.AR = CLR_SR;
+VD2.AR = CLR_SR;
+VD3.AR = CLR_SR;
+VD4.AR = CLR_SR;
+VD5.AR = CLR_SR;
+VD6.AR = CLR_SR;
+VD7.AR = CLR_SR;
+
+
+/*
+ * Logic:  From CGA CLock V3 Note 640BW changed to BW640 due to Fitter errors
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+
+/* Always uses HIRES 25Mhz for Graphics or HIRES=1, 12.5Mhz when HIRES=0 for 40 column mode */
+DOTCLK = (25MHZ & (GRPH # HIRES)) # (Qa & !HIRES & !GRPH); 
+
+/* These conditions are required to cascade D Flip-Flops */
+/* as a Counter !Q feeds back into D */
+Qd.d = ((!Qd & Qc & Qb & Qa) # (Qd & !(Qc & Qb & Qa))) ;
+Qc.d = ((!Qc & Qb & Qa) # (Qc & !(Qb & Qa))) ;
+Qb.d = (!Qb & Qa # Qb & !Qa);
+/* D Flip Flop Counter feeds !Q into D and uses 25MHZ to cycle */
+Qa.d = !Qa;
+
+Qa.AR = RESET;
+Qa.CK = 25MHZ;
+Qb.AR = RESET;
+Qb.CK = 25MHZ;
+Qc.AR = RESET;
+Qc.CK = 25MHZ;
+Qd.AR = RESET;
+Qd.CK = 25MHZ;
+CHCLK = Qc; /* Synonym of Character Clock used for delaying outputs, not 6845 uses INVCHCLK */
+
+
+/* Using the condition (GRPH # HIRES) below means that even if the control register is set to GRPH=1 and HIRES=0 then will still use 80 column mode clock */
+INVCHCLK=  (Qc & (GRPH & BW640 # !GRPH & HIRES)) # (GRPH & !BW640 & !Qc) # (Qd & !HIRES & !GRPH);
+
+/* Character Latch now original SR Latch #3- 4 FF so don't need Colour pipeline */
+CHLATCH=(!Qc & !Qa & !Qb & (HIRES # !HIRES & GRPH)) # (!Qd & !Qb & !Qc & !Qa & !HIRES & !GRPH); /* Pin Mapping now inverted including !Qa should make CHLatch a little earlier */
+
+/* V3 Move back to clock cycle 4 from 3 in V2 - active low to high. For GRPH & 640BW=0 set ATSRLatch to CHLatch */
+ATSRLATCH= ((Qc & !Qa & !Qb) & (GRPH & BW640 # !GRPH & HIRES)) # (Qd & !Qb & !Qc & !Qa & !HIRES & !GRPH) # (GRPH & !BW640 & Qc & Qa & Qb & !DOTCLK);
+
+/* VA0 is based on inverted Qc delayed by 2 dot clocks */
+CHATDLY.d = (!Qc & (GRPH # HIRES)) # ((Qb & !Qc & !Qd & !HIRES) # (!Qb & Qc & !Qd & !HIRES) # (Qb & Qc & !Qd & !HIRES) # (!Qb & !Qc & Qd & !HIRES));
+CHATDLY.CK = 25MHZ;
+
+CHAT.d = CHATDLY;
+CHAT.CK = 25MHZ;
+
+/*
+ * Logic:  From CGA BlinkSync v2 Note
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+
+INVVS = 'b'0; /* Currently hard coded, could use top 2 bits of Control Register */
+INVHS = 'b'1; /* Currently hard coded, could use top 2 bits of Control Register */
+
+/*
+ * Logic:  
+ */
+/* InvHS=0 then HSin output, InvHS=1 !HSin output, HS out will need to be delayed by 1 character clock */
+HSYNC.d = HS & !INVHS # !HS & INVHS; 
+HSYNC.CK = CHCLK;
+HSYNC.AR = RESET;
+
+/* InvVS=0 then VSin output, InvVS=1 !VSin output */
+VSYNC.d = VS & !INVVS # !VS & INVVS;
+VSYNC.CK = CHCLK;
+VSYNC.AR = RESET;
+
+
+VSQ0.CK=VS;
+VSQ1.CK=VS;
+VSQ2.CK=VS;
+VSQ3.CK=VS;
+VSQ4.CK=VS;
+VSQ0.AR=RESET;
+VSQ1.AR=RESET;
+VSQ2.AR=RESET;
+VSQ3.AR=RESET;
+VSQ4.AR=RESET;
+
+/* This counter divides VS 70Hz by 32 to give blink clock for cursor and blink */
+
+VSQ0.d  =
+   !VSQ0;
+
+VSQ1.d  =
+    !VSQ0 & VSQ1
+  # VSQ0 & !VSQ1;
+
+VSQ2.d  =
+    !VSQ0 & VSQ1 & VSQ2
+  # VSQ0 & VSQ1 & !VSQ2
+  # !VSQ1 & VSQ2;
+
+VSQ3.d  =
+    !VSQ0 & VSQ1 & VSQ2 & VSQ3
+  # VSQ0 & VSQ1 & VSQ2 & !VSQ3
+  # !VSQ1 & VSQ2 & VSQ3
+  # !VSQ2 & VSQ3;
+
+VSQ4.d  =
+    !VSQ0 & VSQ1 & VSQ2 & VSQ3 & VSQ4
+  # VSQ0 & VSQ1 & VSQ2 & VSQ3 & !VSQ4
+  # VSQ1 & VSQ2 & !VSQ3 & VSQ4
+  # !VSQ2 & VSQ4
+  # !VSQ1 & VSQ2 & VSQ4;
+
+/* Inverted DE Display Enable internal currently */
+BLANKDE  = !DE;
+BLINKCHR = VSQ4; /* Character Blink is VS/32 */
+BLINKCUR = VSQ3; /* Cursor Blink is VS/16 */
+
+/*
+ * Logic:  Control Register D5-D0, BLINKEN, BW640, VIDEOENABLE, BW, GRPH, HIRES
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ * Could remove external pins for ENBLINK, VIDEOENABLE & BW
+ */
+
+HIRES.d       = D0.io;  /* Control Port D0 MC39; */
+GRPH.d        = D1.io;  /* Control Port D1 MC36; */
+BW.d          = D2.io;  /* Control Port D2 MC35 */
+VIDEOEN.d     = D3.io;  /* Control Port D3 MC34; */
+BW640.d       = D4.io;  /* Control Port D4 MC40; */
+BLINKEN.d     = D5.io;  /* Control Port D5 MC33; */
+
+HIRES.CK       = CGACTL;  /* Control Port D0 MC39; */
+GRPH.CK        = CGACTL;  /* Control Port D1 MC36; */
+BW.CK          = CGACTL;  /* Control Port D2 MC35 */
+VIDEOEN.CK     = CGACTL;  /* Control Port D3 MC34; */
+BW640.CK       = CGACTL;  /* Control Port D4 MC40; */
+BLINKEN.CK     = CGACTL;  /* Control Port D5 MC33; */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ * Logic symbols CGA Attribute Muliplexer V2
+ */
+C1 = (GRPH & !Qc & !Qb & VD7) # (GRPH & !Qc & Qb & VD5) # (GRPH & Qc & !Qb & VD3) # (GRPH & Qc & Qb & VD1);
+C0 = (GRPH & !Qc & !Qb & VD6) # (GRPH & !Qc & Qb & VD4) # (GRPH & Qc & !Qb & VD2) # (GRPH & Qc & Qb & VD0);
+
+I = !GRPH & ((ALPHADOTS & VD3) # (!ALPHADOTS & VD7 & !BLINKEN)); /* Video DAC P3, Alpha Mode = Fore Intensity, H - Back Intensity if BlinkEn=0 */
+R = !GRPH & ((ALPHADOTS & VD2) # (!ALPHADOTS & VD6)); /* Video DAC P2, Alpha Mode Colour=Red VD2 or VD6 */
+G = !GRPH & ((ALPHADOTS & VD1) # (!ALPHADOTS & VD5)); /* Video DAC P1, Alpha Mode Colour=Green VD1 or VD5 */
+B = !GRPH & ((ALPHADOTS & VD0) # (!ALPHADOTS & VD4)); /* Video DAC P0, Alpha Mode Colour=Blue VD0 or VD4 */
+
+AT7 = !GRPH & BLINKEN & VD7; /* Attribute 7 indicates blink when in alpha mode and control port blink enabled */ 
+
+
+/*
+ * Logic symbols from CGA Video Out V3
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+/* This C Gate condition needed intermediate term as too complex for AlphaDots condition (in MDA), when this is true it turns off AlphaDots */
+/* Syntax below evaluates to   !BlinkChr # !BlinkEn # !AT7 # Cursor */
+/* Blink clock will provide alternating blink unless 2nd term returns 1, BlinkEn=0 returns 1, AT7=0 returns 1 and Cursor=1 returns 1*/
+
+CGATE = !BLINKCHR # !(BLINKEN & AT7 & !CURSOR);
+
+    /* Gates         A           B          C          */
+    /* Note for A - !A NOR !B == A&B */
+ALPHADOTS =  (CURSOR & BLINKCUR) #  (CGATE & SDOTS );
+
+BLANKDE1.d = BLANKDE;  /* Delayed DE for pulsing CLR_SR at start of blanking period */
+BLANKDE1.ar = RESET;
+BLANKDE1.CK = CHCLK;
+
+/* Note /CLR_SR active low but ! on pin mapping so +ve logic changed & to # */
+CLR_SR = !VIDEOEN # (BLANKDE & !BLANKDE1) ; /* When video enable is low then output is supressed via CLR_SR, and 1st char clock of blank clears SR */
+/*     1 during blank  1       1 corrected inverse on VS to HS */
+OVERSCAN = BLANKDE & VSYNC & !HSYNC ; /* True when Display Enable=0 (Blank=1) and neither of HS or VS active (note HS inverted for 70Hz) */
+
+
+/*
+ * Logic symbols from Colour Multiplexer V3
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+C1C0Z = !C1 & !C0;  /* True when C1=0 and C0=0 so need 4 Colour Backgroud, False when (C1=1 or C0=1) */
+
+
+/* Since Video DAC P4=BWCol then no point in including in PLD B&W Palette values 0x10 - 0x1f, Colour Palette Values 0x00 - 0x0F */
+
+/*   Text Mode=I,   4 Colour=Background_i,      640x200 and dot=CRInten,        640x200 background will be black */
+P3 = (!GRPH & I) # (GRPH & !BW640 & CRBACKI) # (GRPH & BW640 & CRINTEN & ALPHADOTS); /* Video DAC P3 Intensity */
+
+/*   Text Mode=R,   Overscan not 640=CRRed,        640x200 and dot=CRRed,         4 Colour foreground C1=1 or C0=1=C1,   4 Colour background C1=0 and C0=0 =CRRed */
+P2 = (!GRPH & R) # (OVERSCAN & CRRED & !BW640) # (GRPH & BW640 & CRRED & ALPHADOTS) # (GRPH & !BW640 & !C1C0Z & C1) # (GRPH & !BW640 & C1C0Z & CRRED); /* Video DAC P2 Red */
+
+/*   Text Mode=G,   Overscan not 640=CRGreen,        640x200 and dot=CRGreen,             4 Colour foreground C1=1 or C0=1=C0,   4 Colour background C1=0 and C0=0 =CRGreen */
+P1 = (!GRPH & G) # (OVERSCAN & CRGREEN & !BW640) # (GRPH & BW640 & CRGREEN & ALPHADOTS) # (GRPH & !BW640 & !C1C0Z & C0)    # (GRPH & !BW640 & C1C0Z & CRGREEN); /* Video DAC P1 Green */
+
+/*   Text Mode=B,   Overscan not 640=CRBlue,        640x200 and dot=CRBlue,             4 Colour foreground C1=1 or C0=CRColSl,   4 Colour background C1=0 and C0=0 =CRBlue */
+P0 = (!GRPH & B) # (OVERSCAN & CRBLUE & !BW640) # (GRPH & BW640 & CRBLUE & ALPHADOTS) # (GRPH & !BW640 & !C1C0Z & CRCOLSL)    # (GRPH & !BW640 & C1C0Z & CRBLUE); /* Video DAC P0 Blue */

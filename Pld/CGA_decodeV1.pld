@@ -1,0 +1,100 @@
+Name            CGADECODEV1 CGA Video Controller IO Port Decoder BBPC2 based on CGA PC V1 V5;
+Partno          CGADECODEV1;
+Revision        01;
+Date            09/05/25;
+Designer        Dave Henry;
+Company         Breadboarding Labs;
+Location        UK;
+Assembly        None;
+Device          G22V10; /* V5 was p22v10 now G22V10 */
+
+/*****************************************************************************************/
+/* 15/01/2024 V1 MDA Video Controller IO Port Decoder                                    */
+/* 17/03/2024 V2 MDA Video Controller IO Port Decoder add PS/2 CS                        */
+/* 29/03/2024 V3 MDA Video Controller IO Port Decoder add Floppy Disk Controller         */
+/* cupl.exe -m1lxfjnabe -u C:\WinCUPL\Shared\Atmel.DL C:\WinCUPL\Shared\MDA_decodeV1.pld */  
+/* 01/10/2024 V4 CGA Video Controller IO Port Decoder                                    */
+/* Port 3D0		Palette Add  Wr 3D0-3D3 A0 & A1 to Palette IC                    */
+/* Port 3D1		Palette Colour (IMS G176P uses A1 and A0 for RS1 and RS0 )       */
+/* Port 3D2		Palette Mark                                                     */
+/* Port 3D3		Palette Add Rd                                                   */
+/* Port 3D4		CGA CRTC Index      (6845 uses RS for A0)                        */
+/* Port 3D5		CGA CRTC Data                                                    */
+/* Port 3D8		CGA Control Port                                                 */
+/* Port 3D9		CGA Colour Port                                                  */
+/* Port 3DA		CGA Status Port                                                  */
+/* 07/11/2024 V5 CGA Video Controller IO Port Decoder add /CGAIO change to G22V10        */
+/* 09/05/2025 V1 CGA Video Controller IO Port Decoder BBPC2 video #12                    */
+/*****************************************************************************************/
+
+/* Pin Map 
+          --------
+   /IO3XX|1     24| Vcc
+   /IOR  |2     23| /CGAIO
+   /IOW  |3     22| /CGASTAT  
+   A0    |4     21| /CGACTL
+   A1    |5     20| /CGACOL
+   A2    |6     19| NC
+   A3    |7     18| NC  
+   A4    |8     17| E   
+   A5    |9     16| /CGA6845CS
+   A6    |10    15| /CGAPALRD
+   A7    |11    14| /CGAPALWR
+   Gnd   |12    13| NC
+          --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  = !IO3XX;
+Pin 2  = !IOR;
+Pin 3  = !IOW;
+Pin 4  = A0;
+Pin 5  = A1;
+Pin 6  = A2;
+Pin 7  = A3;
+Pin 8  = A4;
+Pin 9  = A5;
+Pin 10 = A6;
+Pin 11 = A7;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = !CGAIO; 
+Pin 22 = !CGASTAT;
+Pin 21 = !CGACTL;
+Pin 20 = !CGACOL;
+Pin 17 = E;
+Pin 16 = !CGA6845CS; 
+Pin 15 = !CGAPALRD;
+Pin 14 = !CGAPALWR;
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+/*
+ * Logic:  
+ */
+
+field   address    = [A7..0] ;
+
+CGAPALRD =  IO3XX & address:[03D0..03D3] & IOR;       /* 03D0-03D3 & read */
+
+CGAPALWR =  IO3XX & address:[03D0..03D3] & IOW;       /* 03D0-03D3 & write */
+
+CGA6845CS = IO3XX & address:[03D4..03D5];             /* 03D4 Ignore A0 as 6845 has RS=A0 */
+
+CGACTL =   IO3XX & address:[03D8] & IOW & IOW;        /* 03D8 CGA Control Register write */
+
+CGACOL =   IO3XX & address:[03D9] & IOW;              /* 03D9 CGA Colour Register write */
+
+CGASTAT =  IO3XX & address:[03DA] & IOR;              /* 03DA CGA Status Register read */
+
+/* Any IO Read or Write to CGA related ports 03D0-03DF */
+CGAIO =   IO3XX & address:[03D0..03DF] & (IOW # IOR); /* 03Dx CGA IO Ports */
+
+E = (IOR # IOW); /* Motorola 68xx series compatible clock */
